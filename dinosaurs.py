@@ -36,6 +36,7 @@ def dinosaur_move(dir, treasure_y, count):
         move(dir)
     else:
         finalize()
+        count = -1
 
     return treasure_y, count
 
@@ -52,7 +53,7 @@ def main():
         treasure_y, count = dinosaur_move(North, treasure_y, count)
         treasure_y, count = dinosaur_move(North, treasure_y, count)
 
-    while True:
+    while count > -1:
         for _ in range(half_size):
             while (
                 count < half_size_square

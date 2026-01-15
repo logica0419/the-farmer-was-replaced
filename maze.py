@@ -38,28 +38,28 @@ directions.append((west, West, East, -1, 0))
 reset_limit = 300
 
 
-def init_search(maze, current, came_from):
+def init_search(maze, current_x, current_y, came_from):
     for dir in directions:
         if not can_move(dir[1]):
             continue
 
-        maze[current[0]][current[1]] *= dir[0]
+        maze[current_x][current_y] *= dir[0]
 
         if dir[1] == came_from:
             continue
 
         move(dir[1])
-        maze = init_search(maze, (current[0] + dir[3], current[1] + dir[4]), dir[2])
+        maze = init_search(maze, current_x + dir[3], current_y + dir[4], dir[2])
         move(dir[2])
 
     return maze
 
 
-def update_pixel(maze, current):
-    maze[current[0]][current[1]] = 1
+def update_pixel(maze, current_x, current_y):
+    maze[current_x][current_y] = 1
     for dir in directions:
         if can_move(dir[1]):
-            maze[current[0]][current[1]] *= dir[0]
+            maze[current_x][current_y] *= dir[0]
     return maze
 
 
@@ -89,11 +89,13 @@ def find_route(maze, current, treasure):
 
             queue.append((new_pos, new_route_num, dir[2]))
 
+    return routes[0]
+
 
 substance = 5 * 2 ** (num_unlocked(Unlocks.Mazes) - 1)
 
 
-def search(base_pos):
+def search(base_pos_x, base_pos_y):
     maze = [
         [1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1],
@@ -102,16 +104,17 @@ def search(base_pos):
         [1, 1, 1, 1, 1],
     ]
 
-    current = (2, 2)
-    maze = init_search(maze, current, None)
+    current_x, current_y = 2, 2
+    maze = init_search(maze, current_x, current_y, None)
 
     while True:
-        current = (get_pos_x() - base_pos[0], get_pos_y() - base_pos[1])
         treasure = measure()
 
-        maze = update_pixel(maze, current)
+        maze = update_pixel(maze, current_x, current_y)
         route = find_route(
-            maze, current, (treasure[0] - base_pos[0], treasure[1] - base_pos[1])
+            maze,
+            (current_x, current_y),
+            (treasure[0] - base_pos_x, treasure[1] - base_pos_y),
         )
         for _ in range(len(route)):
             move(route.pop())
@@ -121,6 +124,8 @@ def search(base_pos):
         ):
             harvest()
             break
+
+        current_x, current_y = get_pos_x() - base_pos_x, get_pos_y() - base_pos_y
 
         if num_items(Items.Power) < 1000:
             break
@@ -156,7 +161,7 @@ def solve_maze():
         plant(Entities.Bush)
         use_item(Items.Weird_Substance, substance)
 
-        search((init_pos_x - 2, init_pos_y - 2))
+        search(init_pos_x - 2, init_pos_y - 2)
 
         if num_items(Items.Power) < 1000:
             break
