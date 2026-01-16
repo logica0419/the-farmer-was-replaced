@@ -55,7 +55,7 @@ def init_search(maze, current_x, current_y, came_from):
     return maze
 
 
-def update_pixel(maze, current_x, current_y):
+def update_cell(maze, current_x, current_y):
     maze[current_x][current_y] = 1
     for dir in directions:
         if can_move(dir[1]):
@@ -110,7 +110,6 @@ def search(base_pos_x, base_pos_y):
     while True:
         treasure = measure()
 
-        maze = update_pixel(maze, current_x, current_y)
         route = find_route(
             maze,
             (current_x, current_y),
@@ -126,6 +125,7 @@ def search(base_pos_x, base_pos_y):
             break
 
         current_x, current_y = get_pos_x() - base_pos_x, get_pos_y() - base_pos_y
+        maze = update_cell(maze, current_x, current_y)
 
         if num_items(Items.Power) < 1000:
             break
