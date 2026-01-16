@@ -117,6 +117,7 @@ def search(base_pos_x, base_pos_y):
         )
         for _ in range(len(route)):
             move(route.pop())
+            maze = update_cell(maze, current_x, current_y)
 
         if get_entity_type() != Entities.Treasure or not use_item(
             Items.Weird_Substance, substance
@@ -125,7 +126,6 @@ def search(base_pos_x, base_pos_y):
             break
 
         current_x, current_y = get_pos_x() - base_pos_x, get_pos_y() - base_pos_y
-        maze = update_cell(maze, current_x, current_y)
 
         if num_items(Items.Power) < 1000:
             break
