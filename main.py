@@ -1,6 +1,3 @@
-import farm
-import maze
+from __builtins__ import Leaderboards, leaderboard_run
 
-while True:
-    farm.main()
-    maze.main()
+leaderboard_run(Leaderboards.Cactus, "cactus", 256)
