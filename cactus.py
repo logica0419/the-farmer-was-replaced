@@ -40,6 +40,13 @@ def sort_cactus_line(finalize_func, direction, reverse):
                 i -= 1
                 continue
 
+        if returning_len == 1:
+            i += 1
+            if i == size_minus_1:
+                return
+            move(direction)
+            continue
+
         tmp_i = i
         i += returning_len
         if i == size_minus_1:
