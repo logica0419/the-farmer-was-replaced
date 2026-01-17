@@ -18,9 +18,7 @@ from __builtins__ import (
 
 size = 32
 size_minus_1 = 31
-size_minus_2 = 30
 half_size = 16
-twice_size = 64
 
 max_drone = 32
 max_drone_minus_1 = 31
@@ -47,7 +45,7 @@ def sort_cactus_line(finalize_func, direction, reverse):
             move(direction)
             continue
 
-        tmp_i = i
+        i_plus_2 = i + 2
         i += returning_len
         if i == size_minus_1:
             return
@@ -56,9 +54,9 @@ def sort_cactus_line(finalize_func, direction, reverse):
             for _ in range(returning_len):
                 move(direction)
         else:
-            for _ in range(tmp_i + 2):
+            for _ in range(i_plus_2):
                 move(reverse)
-            for _ in range(size_minus_2 - returning_len - tmp_i):
+            for _ in range(size - returning_len - i_plus_2):
                 if measure() > measure(direction):
                     swap(direction)
                 move(reverse)
