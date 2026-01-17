@@ -34,11 +34,13 @@ directions.append((east, East, West, 1, 0))
 directions.append((south, South, North, 0, -1))
 directions.append((west, West, East, -1, 0))
 
-
-reset_limit = 300
+substance = 5 * 2 ** (num_unlocked(Unlocks.Mazes) - 1)
 
 
 def init_search(maze, current_x, current_y, came_from):
+    if get_entity_type() == Entities.Treasure:
+        use_item(Items.Weird_Substance, substance)
+
     for dir in directions:
         if not can_move(dir[1]):
             continue
@@ -49,10 +51,8 @@ def init_search(maze, current_x, current_y, came_from):
             continue
 
         move(dir[1])
-        maze = init_search(maze, current_x + dir[3], current_y + dir[4], dir[2])
+        init_search(maze, current_x + dir[3], current_y + dir[4], dir[2])
         move(dir[2])
-
-    return maze
 
 
 def update_cell(maze, current_x, current_y):
@@ -60,7 +60,6 @@ def update_cell(maze, current_x, current_y):
     for dir in directions:
         if can_move(dir[1]):
             maze[current_x][current_y] *= dir[0]
-    return maze
 
 
 def find_route(maze, current, treasure):
@@ -92,9 +91,6 @@ def find_route(maze, current, treasure):
     return routes[0]
 
 
-substance = 5 * 2 ** (num_unlocked(Unlocks.Mazes) - 1)
-
-
 def search(base_pos_x, base_pos_y):
     maze = [
         [1, 1, 1, 1, 1],
@@ -105,7 +101,7 @@ def search(base_pos_x, base_pos_y):
     ]
 
     current_x, current_y = 2, 2
-    maze = init_search(maze, current_x, current_y, None)
+    init_search(maze, current_x, current_y, None)
 
     while True:
         treasure = measure()
@@ -117,7 +113,7 @@ def search(base_pos_x, base_pos_y):
         )
         for _ in range(len(route)):
             move(route.pop())
-            maze = update_cell(maze, current_x, current_y)
+            update_cell(maze, get_pos_x() - base_pos_x, get_pos_y() - base_pos_y)
 
         if get_entity_type() != Entities.Treasure or not use_item(
             Items.Weird_Substance, substance
@@ -195,4 +191,4 @@ def main():
             wait_for(drone)
 
 
-# main()
+main()
