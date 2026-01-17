@@ -27,8 +27,8 @@ from __builtins__ import (
 )
 
 size = get_world_size()
-cactus_area_hight = size // 4
-pumpkin_area_height = size // 2 - 2
+cactus_area_hight = 0
+pumpkin_area_height = 0
 sunflower_area_height = size * 3 // 4
 carrot_area_height = size * 15 // 16
 
@@ -255,4 +255,4 @@ def main():
     farm()
 
 
-# main()
+main()

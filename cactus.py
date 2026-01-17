@@ -18,54 +18,52 @@ from __builtins__ import (
 
 size = 32
 size_minus_1 = 31
+size_minus_2 = 30
 half_size = 16
-one_fourth_size_minus_1 = 7
+twice_size = 64
 
 max_drone = 32
 max_drone_minus_1 = 31
 
 
-def sort_cactus_line(finalize_func, direction, inverse):
-    i = 1
-    n = -size
-    inverted = 0
+def sort_cactus_line(finalize_func, direction, reverse):
+    i = 0
+    returning_len = 1
 
     while True:
-        n += 1
-
-        if measure() < measure(inverse) and swap(inverse) and i > 1:
-            move(inverse)
-            if n < size:
-                inverted += 1
+        if measure() > measure(direction) and swap(direction) and i > 0:
+            if i < half_size or not spawn_drone(
+                sort_cactus_slave(i, finalize_func, reverse)
+            ):
+                move(reverse)
+                returning_len += 1
                 i -= 1
                 continue
 
-            if spawn_drone(sort_cactus_slave(i - 1, finalize_func, inverse)):
-                move(direction)
-            else:
-                inverted += 1
-                i -= 1
-                continue
-
-        inverted_plus_1 = inverted + 1
-        i += inverted_plus_1
-        if i >= size:
+        tmp_i = i
+        i += returning_len
+        if i == size_minus_1:
             return
 
-        if inverted >= half_size:
-            for _ in range(size - inverted_plus_1):
-                move(inverse)
-        else:
-            for _ in range(inverted_plus_1):
+        if returning_len < half_size:
+            for _ in range(returning_len):
                 move(direction)
-        inverted = 0
+        else:
+            for _ in range(tmp_i + 2):
+                move(reverse)
+            for _ in range(size_minus_2 - returning_len - tmp_i):
+                if measure() > measure(direction):
+                    swap(direction)
+                move(reverse)
+
+        returning_len = 1
 
 
-def sort_cactus_slave(i, finalize_func, inverse):
+def sort_cactus_slave(i, finalize_func, reverse):
     def sort_func():
         for _ in range(i):
-            if measure() < measure(inverse) and swap(inverse):
-                move(inverse)
+            if measure() < measure(reverse) and swap(reverse):
+                move(reverse)
             else:
                 break
 
@@ -76,8 +74,6 @@ def sort_cactus_slave(i, finalize_func, inverse):
 
 
 def farm_cactus_row_leader():
-    move(East)
-
     for _ in range(size_minus_1):
         spawn_drone(farm_cactus_row)
         move(North)
@@ -93,7 +89,7 @@ def farm_cactus_row():
 
     sort_cactus_line(harvest, East, West)
 
-    if get_pos_y() == 1:
+    if get_pos_y() == 0:
         farm_cactus_column_leader()
 
 
@@ -126,7 +122,6 @@ def farm_cactus_column():
 
 
 def run():
-    clear()
     farm_cactus_row_leader()
 
 
