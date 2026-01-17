@@ -19,6 +19,10 @@ from __builtins__ import (
 size = 32
 size_minus_1 = 31
 half_size = 16
+one_fourth_size_minus_1 = 7
+
+max_drone = 32
+threshold = 10
 
 
 def sort_cactus_line(finalize_func, direction, inverse):
@@ -87,28 +91,38 @@ def farm_cactus_row():
         plant(Entities.Cactus)
         move(East)
 
-    sort_cactus_line(farm_cactus_column_leader, East, West)
+    sort_cactus_line(harvest, East, West)
 
-    if num_drones() == 1:
+    if get_pos_y() == 1:
         farm_cactus_column_leader()
 
 
 def farm_cactus_column_leader():
-    direction = South
-    if half_size < get_pos_y():
-        direction = North
+    for _ in range(max_drone - 1 - threshold):
+        while num_drones() > max_drone - threshold:
+            pass
 
-    while get_pos_y() != 1:
-        move(direction)
+        drone = None
+        while not drone:
+            drone = spawn_drone(farm_cactus_column)
+        move(East)
 
-    for _ in range(size_minus_1):
-        spawn_drone(farm_cactus_column)
+    while num_drones() > max_drone - threshold:
+        pass
+
+    for _ in range(threshold):
+        drone = None
+        while not drone:
+            drone = spawn_drone(farm_cactus_column)
         move(East)
 
     farm_cactus_column()
 
 
 def farm_cactus_column():
+    while num_drones() < max_drone:
+        pass
+
     sort_cactus_line(harvest, North, South)
 
     if num_drones() == 1:
