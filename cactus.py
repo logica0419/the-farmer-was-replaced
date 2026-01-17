@@ -22,7 +22,7 @@ half_size = 16
 one_fourth_size_minus_1 = 7
 
 max_drone = 32
-threshold = 10
+max_drone_minus_1 = 31
 
 
 def sort_cactus_line(finalize_func, direction, inverse):
@@ -98,23 +98,19 @@ def farm_cactus_row():
 
 
 def farm_cactus_column_leader():
-    for _ in range(max_drone - 1 - threshold):
-        while num_drones() > max_drone - threshold:
-            pass
+    threshold = 16
 
-        drone = None
-        while not drone:
-            drone = spawn_drone(farm_cactus_column)
-        move(East)
+    while threshold > 0:
+        for _ in range(threshold):
+            while num_drones() > max_drone_minus_1 - (threshold // 2):
+                pass
 
-    while num_drones() > max_drone - threshold:
-        pass
+            drone = None
+            while not drone:
+                drone = spawn_drone(farm_cactus_column)
+            move(East)
 
-    for _ in range(threshold):
-        drone = None
-        while not drone:
-            drone = spawn_drone(farm_cactus_column)
-        move(East)
+        threshold //= 2
 
     farm_cactus_column()
 
@@ -130,6 +126,7 @@ def farm_cactus_column():
 
 
 def run():
+    clear()
     farm_cactus_row_leader()
 
 
