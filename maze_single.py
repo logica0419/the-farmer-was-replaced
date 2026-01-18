@@ -5,57 +5,100 @@ from __builtins__ import (
     North,
     South,
     West,
+    abs,
     can_move,
     get_entity_type,
     get_pos_x,
     get_pos_y,
     harvest,
+    len,
     measure,
     move,
     plant,
     use_item,
 )
 
-north = 2
-east = 3
-south = 5
-west = 7
-
-directions = [
-    (north, North, South, 0, 1),
-    (east, East, West, 1, 0),
-    (south, South, North, 0, -1),
-    (west, West, East, -1, 0),
-]
-
 size = 8
 substance = 256
 
+north_movabilities = [
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+]
+east_movabilities = [
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+]
+south_movabilities = [
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+]
+west_movabilities = [
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+]
 
-def init_search(maze, visited, current, came_from, reset_limit):
+# ------------------------------------------ init_search ------------------------------------------
+
+
+def init_search(reset_limit):
     if get_entity_type() == Entities.Treasure:
         use_item(Items.Weird_Substance, substance)
         reset_limit -= 1
 
-    current_x, current_y = current[0], current[1]
+    visited = {(0, 0)}
 
-    for dir in directions:
-        if not can_move(dir[1]):
-            continue
+    if can_move(North):
+        north_movabilities[0][0] = 1
 
-        maze[current_x][current_y] *= dir[0]
-
-        if dir[1] == came_from:
-            continue
-
-        new_pos = (current_x + dir[3], current_y + dir[4])
+        new_pos_x = 0
+        new_pos_y = 1
+        new_pos = (new_pos_x, new_pos_y)
         if new_pos in visited:
-            continue
+            return reset_limit
         visited.add(new_pos)
 
-        move(dir[1])
-        reset_limit = init_search(maze, visited, new_pos, dir[2], reset_limit)
-        move(dir[2])
+        move(North)
+        reset_limit = init_search_north(visited, new_pos_x, new_pos_y, reset_limit)
+        move(South)
+
+    if can_move(East):
+        east_movabilities[0][0] = 1
+
+        new_pos_x = 1
+        new_pos_y = 0
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(East)
+        reset_limit = init_search_east(visited, new_pos_x, new_pos_y, reset_limit)
+        move(West)
 
     if get_entity_type() == Entities.Treasure:
         use_item(Items.Weird_Substance, substance)
@@ -64,237 +107,647 @@ def init_search(maze, visited, current, came_from, reset_limit):
     return reset_limit
 
 
-def update_cell(maze, current_x, current_y):
-    ref = 1
-    for dir in directions:
-        if can_move(dir[1]):
-            ref *= dir[0]
-    maze[current_x][current_y] = ref
+def init_search_north(visited, current_x, current_y, reset_limit):
+    if get_entity_type() == Entities.Treasure:
+        use_item(Items.Weird_Substance, substance)
+        reset_limit -= 1
+
+    if can_move(North):
+        north_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x
+        new_pos_y = current_y + 1
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(North)
+        reset_limit = init_search_north(visited, new_pos_x, new_pos_y, reset_limit)
+        move(South)
+
+    if can_move(East):
+        east_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x + 1
+        new_pos_y = current_y
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(East)
+        reset_limit = init_search_east(visited, new_pos_x, new_pos_y, reset_limit)
+        move(West)
+
+    south_movabilities[current_x][current_y] = 1
+
+    if can_move(West):
+        west_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x - 1
+        new_pos_y = current_y
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(West)
+        reset_limit = init_search_west(visited, new_pos_x, new_pos_y, reset_limit)
+        move(East)
+
+    if get_entity_type() == Entities.Treasure:
+        use_item(Items.Weird_Substance, substance)
+        reset_limit -= 1
+
+    return reset_limit
 
 
-def bfs(maze, current_x, current_y, treasure):
+def init_search_east(visited, current_x, current_y, reset_limit):
+    if get_entity_type() == Entities.Treasure:
+        use_item(Items.Weird_Substance, substance)
+        reset_limit -= 1
+
+    if can_move(North):
+        north_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x
+        new_pos_y = current_y + 1
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(North)
+        reset_limit = init_search_north(visited, new_pos_x, new_pos_y, reset_limit)
+        move(South)
+
+    if can_move(East):
+        east_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x + 1
+        new_pos_y = current_y
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(East)
+        reset_limit = init_search_east(visited, new_pos_x, new_pos_y, reset_limit)
+        move(West)
+
+    if can_move(South):
+        south_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x
+        new_pos_y = current_y - 1
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(South)
+        reset_limit = init_search_south(visited, new_pos_x, new_pos_y, reset_limit)
+        move(North)
+
+    west_movabilities[current_x][current_y] = 1
+
+    if get_entity_type() == Entities.Treasure:
+        use_item(Items.Weird_Substance, substance)
+        reset_limit -= 1
+
+    return reset_limit
+
+
+def init_search_south(visited, current_x, current_y, reset_limit):
+    if get_entity_type() == Entities.Treasure:
+        use_item(Items.Weird_Substance, substance)
+        reset_limit -= 1
+
+    north_movabilities[current_x][current_y] = 1
+
+    if can_move(East):
+        east_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x + 1
+        new_pos_y = current_y
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(East)
+        reset_limit = init_search_east(visited, new_pos_x, new_pos_y, reset_limit)
+        move(West)
+
+    if can_move(South):
+        south_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x
+        new_pos_y = current_y - 1
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(South)
+        reset_limit = init_search_south(visited, new_pos_x, new_pos_y, reset_limit)
+        move(North)
+
+    if can_move(West):
+        west_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x - 1
+        new_pos_y = current_y
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(West)
+        reset_limit = init_search_west(visited, new_pos_x, new_pos_y, reset_limit)
+        move(East)
+
+    if get_entity_type() == Entities.Treasure:
+        use_item(Items.Weird_Substance, substance)
+        reset_limit -= 1
+
+    return reset_limit
+
+
+def init_search_west(visited, current_x, current_y, reset_limit):
+    if get_entity_type() == Entities.Treasure:
+        use_item(Items.Weird_Substance, substance)
+        reset_limit -= 1
+
+    if can_move(North):
+        north_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x
+        new_pos_y = current_y + 1
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(North)
+        reset_limit = init_search_north(visited, new_pos_x, new_pos_y, reset_limit)
+        move(South)
+
+    east_movabilities[current_x][current_y] = 1
+
+    if can_move(South):
+        south_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x
+        new_pos_y = current_y - 1
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(South)
+        reset_limit = init_search_south(visited, new_pos_x, new_pos_y, reset_limit)
+        move(North)
+
+    if can_move(West):
+        west_movabilities[current_x][current_y] = 1
+
+        new_pos_x = current_x - 1
+        new_pos_y = current_y
+        new_pos = (new_pos_x, new_pos_y)
+        if new_pos in visited:
+            return reset_limit
+        visited.add(new_pos)
+
+        move(West)
+        reset_limit = init_search_west(visited, new_pos_x, new_pos_y, reset_limit)
+        move(East)
+
+    if get_entity_type() == Entities.Treasure:
+        use_item(Items.Weird_Substance, substance)
+        reset_limit -= 1
+
+    return reset_limit
+
+
+# ------------------------------------------------------------------------------------
+
+
+def update_cell(current_x, current_y):
+    if can_move(North):
+        north_movabilities[current_x][current_y] = 1
+    if can_move(East):
+        east_movabilities[current_x][current_y] = 1
+    if can_move(South):
+        south_movabilities[current_x][current_y] = 1
+    if can_move(West):
+        west_movabilities[current_x][current_y] = 1
+
+
+# def bfs(current_x, current_y, treasure):
+#     current = (current_x, current_y)
+#     if current == treasure:
+#         return []
+
+#     visited = {current}
+#     routes = [[]]
+#     current_cost = 0
+#     current_queue = [(current_x, current_y, 0, None)]
+#     priority_queues = {}
+
+#     while True:
+#         while len(current_queue) == 0:
+#             current_cost += 1
+#             if current_cost in priority_queues:
+#                 current_queue = priority_queues[current_cost]
+
+#         pos_x, pos_y, route_num, came_from = current_queue.pop(0)
+#         tmp_route = routes[route_num][:]
+#         tmp_cost = current_cost + 1
+
+#         north_movability = 0
+#         east_movability = 0
+#         south_movability = 0
+#         west_movability = 0
+#         movability = 0
+#         while True:
+#             if came_from == North:
+#                 north_movability = 0
+#                 east_movability = east_movabilities[pos_x][pos_y]
+#                 south_movability = south_movabilities[pos_x][pos_y]
+#                 west_movability = west_movabilities[pos_x][pos_y]
+#             elif came_from == East:
+#                 north_movability = north_movabilities[pos_x][pos_y]
+#                 east_movability = 0
+#                 south_movability = south_movabilities[pos_x][pos_y]
+#                 west_movability = west_movabilities[pos_x][pos_y]
+#             elif came_from == South:
+#                 north_movability = north_movabilities[pos_x][pos_y]
+#                 east_movability = east_movabilities[pos_x][pos_y]
+#                 south_movability = 0
+#                 west_movability = west_movabilities[pos_x][pos_y]
+#             elif came_from == West:
+#                 north_movability = north_movabilities[pos_x][pos_y]
+#                 east_movability = east_movabilities[pos_x][pos_y]
+#                 south_movability = south_movabilities[pos_x][pos_y]
+#                 west_movability = 0
+#             else:
+#                 north_movability = north_movabilities[pos_x][pos_y]
+#                 east_movability = east_movabilities[pos_x][pos_y]
+#                 south_movability = south_movabilities[pos_x][pos_y]
+#                 west_movability = west_movabilities[pos_x][pos_y]
+
+#             movability = (
+#                 north_movability + east_movability + south_movability + west_movability
+#             )
+#             if movability != 1:
+#                 break
+
+#             if north_movability:
+#                 tmp_route.append(North)
+#                 pos_y += 1
+#                 came_from = South
+#             elif east_movability:
+#                 tmp_route.append(East)
+#                 pos_x += 1
+#                 came_from = West
+#             elif south_movability:
+#                 tmp_route.append(South)
+#                 pos_y -= 1
+#                 came_from = North
+#             else:
+#                 tmp_route.append(West)
+#                 pos_x -= 1
+#                 came_from = East
+
+#             tmp_cost += 1
+
+#             new_pos = (pos_x, pos_y)
+#             if new_pos == treasure:
+#                 return tmp_route
+#             if new_pos in visited:
+#                 movability = 0
+#                 break
+#             visited.add(new_pos)
+
+#         if movability == 0:
+#             continue
+
+#         if tmp_cost not in priority_queues:
+#             priority_queues[tmp_cost] = []
+
+#         if north_movability:
+#             new_pos_y = pos_y + 1
+#             new_pos = (pos_x, new_pos_y)
+
+#             if new_pos == treasure:
+#                 tmp_route.append(North)
+#                 return tmp_route
+
+#             if new_pos not in visited:
+#                 visited.add(new_pos)
+
+#                 new_route_num = len(routes)
+#                 new_route = tmp_route[:]
+#                 new_route.append(North)
+#                 routes.append(new_route)
+
+#                 priority_queues[tmp_cost].append(
+#                     (pos_x, new_pos_y, new_route_num, South)
+#                 )
+
+#         if east_movability:
+#             new_pos_x = pos_x + 1
+#             new_pos = (new_pos_x, pos_y)
+
+#             if new_pos == treasure:
+#                 tmp_route.append(East)
+#                 return tmp_route
+
+#             if new_pos not in visited:
+#                 visited.add(new_pos)
+
+#                 new_route_num = len(routes)
+#                 new_route = tmp_route[:]
+#                 new_route.append(East)
+#                 routes.append(new_route)
+
+#                 priority_queues[tmp_cost].append(
+#                     (new_pos_x, pos_y, new_route_num, West)
+#                 )
+
+#         if south_movability:
+#             new_pos_y = pos_y - 1
+#             new_pos = (pos_x, new_pos_y)
+
+#             if new_pos == treasure:
+#                 tmp_route.append(South)
+#                 return tmp_route
+
+#             if new_pos not in visited:
+#                 visited.add(new_pos)
+
+#                 new_route_num = len(routes)
+#                 new_route = tmp_route[:]
+#                 new_route.append(South)
+#                 routes.append(new_route)
+
+#                 priority_queues[tmp_cost].append(
+#                     (pos_x, new_pos_y, new_route_num, North)
+#                 )
+
+#         if west_movability:
+#             new_pos_x = pos_x - 1
+#             new_pos = (new_pos_x, pos_y)
+
+#             if new_pos == treasure:
+#                 tmp_route.append(West)
+#                 return tmp_route
+
+#             if new_pos not in visited:
+#                 visited.add(new_pos)
+
+#                 new_route_num = len(routes)
+#                 new_route = tmp_route[:]
+#                 new_route.append(West)
+#                 routes.append(new_route)
+
+#                 priority_queues[tmp_cost].append(
+#                     (new_pos_x, pos_y, new_route_num, East)
+#                 )
+
+
+def dist(x1, y1, x2, y2):
+    return abs(x1 - x2) + abs(y1 - y2)
+
+
+def a_star(current_x, current_y, treasure):
     current = (current_x, current_y)
     if current == treasure:
         return []
 
-    treasure_visited = {treasure: 0}
-    treasure_routes = [[]]
-    treasure_queue = [(treasure, 0, None)]
+    treasure_x, treasure_y = treasure
 
-    current_visited = {current: 0}
-    current_routes = [[]]
-    current_queue = [(current, 0, None)]
-
-    while True:
-        pos, route_num, came_from = treasure_queue.pop(0)
-        pos_x, pos_y = pos[0], pos[1]
-        cell = maze[pos_x][pos_y]
-        route = treasure_routes[route_num]
-
-        for dir in directions:
-            if dir[1] == came_from or cell % dir[0] != 0:
-                continue
-
-            new_pos = (pos_x + dir[3], pos[1] + dir[4])
-            if new_pos in treasure_visited:
-                continue
-
-            new_route_num = len(treasure_routes)
-            treasure_routes.append(route[:])
-            treasure_routes[new_route_num].append(dir[2])
-
-            treasure_visited[new_pos] = new_route_num
-
-            treasure_queue.append((new_pos, new_route_num, dir[2]))
-
-        # ------------------------------------------------------
-
-        pos, route_num, came_from = current_queue.pop(0)
-        pos_x, pos_y = pos[0], pos[1]
-        cell = maze[pos_x][pos_y]
-        route = current_routes[route_num]
-
-        for dir in directions:
-            if dir[1] == came_from or cell % dir[0] != 0:
-                continue
-
-            new_pos = (pos_x + dir[3], pos[1] + dir[4])
-            if new_pos in current_visited:
-                continue
-
-            if new_pos in treasure_visited:
-                route.append(dir[1])
-                treasure_route = treasure_routes[treasure_visited[new_pos]]
-                for _ in range(len(treasure_route)):
-                    route.append(treasure_route.pop())
-                return route
-
-            new_route_num = len(current_routes)
-
-            current_routes.append(route[:])
-            current_routes[new_route_num].append(dir[1])
-
-            current_visited[new_pos] = new_route_num
-
-            current_queue.append((new_pos, new_route_num, dir[2]))
-
-
-def a_star(maze, current_x, current_y, treasure):
-    current = (current_x, current_y)
-    treasure_x, treasure_y = treasure[0], treasure[1]
-
-    cost = abs(treasure_x - current_x) + abs(treasure_y - current_y)
-
-    treasure_visited = {treasure: 0}
-    treasure_routes = [[]]
-    treasure_queue = [(treasure, 0, None, 0, cost)]
-
-    current_visited = {current: 0}
-    current_routes = [[]]
-    current_queue = [(current, 0, None, 0, cost)]
+    visited = {current}
+    routes = [[]]
+    current_cost = dist(current_x, current_y, treasure_x, treasure_y)
+    priority_queues = {current_cost: [(current_x, current_y, 0, None, 0)]}
 
     while True:
-        pos, route_num, came_from, cost, _ = treasure_queue.pop(0)
-        pos_x, pos_y = pos[0], pos[1]
-        cell = maze[pos_x][pos_y]
-        route = treasure_routes[route_num]
+        if len(priority_queues[current_cost]) == 0:
+            current_cost += 1
+            while current_cost not in priority_queues:
+                current_cost += 1
 
-        for dir in directions:
-            if dir[1] == came_from or cell % dir[0] != 0:
-                continue
+        pos_x, pos_y, route_num, came_from, base_cost = priority_queues[
+            current_cost
+        ].pop(0)
+        tmp_route = routes[route_num]
+        tmp_cost = base_cost + 1
 
-            new_pos_x = pos_x + dir[3]
-            new_pos_y = pos_y + dir[4]
-            new_pos = (new_pos_x, new_pos_y)
-            if new_pos in treasure_visited:
-                continue
+        north_movability = 0
+        east_movability = 0
+        south_movability = 0
+        west_movability = 0
+        movability = 0
+        while True:
+            if came_from == North:
+                north_movability = 0
+                east_movability = east_movabilities[pos_x][pos_y]
+                south_movability = south_movabilities[pos_x][pos_y]
+                west_movability = west_movabilities[pos_x][pos_y]
+            elif came_from == East:
+                north_movability = north_movabilities[pos_x][pos_y]
+                east_movability = 0
+                south_movability = south_movabilities[pos_x][pos_y]
+                west_movability = west_movabilities[pos_x][pos_y]
+            elif came_from == South:
+                north_movability = north_movabilities[pos_x][pos_y]
+                east_movability = east_movabilities[pos_x][pos_y]
+                south_movability = 0
+                west_movability = west_movabilities[pos_x][pos_y]
+            elif came_from == West:
+                north_movability = north_movabilities[pos_x][pos_y]
+                east_movability = east_movabilities[pos_x][pos_y]
+                south_movability = south_movabilities[pos_x][pos_y]
+                west_movability = 0
+            else:
+                north_movability = north_movabilities[pos_x][pos_y]
+                east_movability = east_movabilities[pos_x][pos_y]
+                south_movability = south_movabilities[pos_x][pos_y]
+                west_movability = west_movabilities[pos_x][pos_y]
 
-            new_cost = cost + 1
-            new_total_cost = (
-                new_cost + abs(current_x - new_pos_x) + abs(current_y - new_pos_y)
+            movability = (
+                north_movability + east_movability + south_movability + west_movability
             )
+            if movability != 1:
+                break
 
-            new_route_num = len(treasure_routes)
-            treasure_routes.append(route[:])
-            treasure_routes[new_route_num].append(dir[2])
+            if north_movability:
+                tmp_route.append(North)
+                pos_y += 1
+                came_from = South
+            elif east_movability:
+                tmp_route.append(East)
+                pos_x += 1
+                came_from = West
+            elif south_movability:
+                tmp_route.append(South)
+                pos_y -= 1
+                came_from = North
+            else:
+                tmp_route.append(West)
+                pos_x -= 1
+                came_from = East
 
-            treasure_visited[new_pos] = new_route_num
+            tmp_cost += 1
 
-            inserted = False
-            for i in range(len(treasure_queue)):
-                if treasure_queue[i][4] >= new_total_cost:
-                    treasure_queue.insert(
-                        i, (new_pos, new_route_num, dir[2], new_cost, new_total_cost)
+            new_pos = (pos_x, pos_y)
+            if new_pos == treasure:
+                return tmp_route
+            if new_pos in visited:
+                movability = 0
+                break
+            visited.add(new_pos)
+
+        if movability == 0:
+            continue
+
+        if north_movability:
+            new_pos_y = pos_y + 1
+            new_pos = (pos_x, new_pos_y)
+
+            if new_pos == treasure:
+                tmp_route.append(North)
+                return tmp_route
+
+            if new_pos not in visited:
+                visited.add(new_pos)
+
+                new_route_num = len(routes)
+                new_route = tmp_route[:]
+                new_route.append(North)
+                routes.append(new_route)
+
+                new_cost = tmp_cost + dist(pos_x, new_pos_y, treasure_x, treasure_y)
+                if new_cost not in priority_queues:
+                    priority_queues[new_cost] = [
+                        (pos_x, new_pos_y, new_route_num, South, tmp_cost)
+                    ]
+                else:
+                    priority_queues[new_cost].append(
+                        (pos_x, new_pos_y, new_route_num, South, tmp_cost)
                     )
-                    inserted = True
-                    break
-            if not inserted:
-                treasure_queue.append(
-                    (new_pos, new_route_num, dir[2], new_cost, new_total_cost)
-                )
 
-        # ------------------------------------------------------
+        if east_movability:
+            new_pos_x = pos_x + 1
+            new_pos = (new_pos_x, pos_y)
 
-        pos, route_num, came_from, cost, _ = current_queue.pop(0)
-        pos_x, pos_y = pos[0], pos[1]
-        cell = maze[pos_x][pos_y]
-        route = current_routes[route_num]
+            if new_pos == treasure:
+                tmp_route.append(East)
+                return tmp_route
 
-        for dir in directions:
-            if dir[1] == came_from or cell % dir[0] != 0:
-                continue
+            if new_pos not in visited:
+                visited.add(new_pos)
 
-            new_pos_x = pos_x + dir[3]
-            new_pos_y = pos_y + dir[4]
-            new_pos = (new_pos_x, new_pos_y)
-            if new_pos in current_visited:
-                continue
+                new_route_num = len(routes)
+                new_route = tmp_route[:]
+                new_route.append(East)
+                routes.append(new_route)
 
-            if new_pos in treasure_visited:
-                route = route
-                route.append(dir[1])
-                treasure_route = treasure_routes[treasure_visited[new_pos]]
-                for _ in range(len(treasure_route)):
-                    route.append(treasure_route.pop())
-                return route
-
-            new_cost = cost + 1
-            new_total_cost = (
-                new_cost + abs(treasure_x - new_pos_x) + abs(treasure_y - new_pos_y)
-            )
-
-            new_route_num = len(current_routes)
-
-            current_routes.append(route[:])
-            current_routes[new_route_num].append(dir[1])
-
-            current_visited[new_pos] = new_route_num
-
-            inserted = False
-            for i in range(len(current_queue)):
-                if current_queue[i][4] >= new_total_cost:
-                    current_queue.insert(
-                        i, (new_pos, new_route_num, dir[2], new_cost, new_total_cost)
+                new_cost = tmp_cost + dist(new_pos_x, pos_y, treasure_x, treasure_y)
+                if new_cost not in priority_queues:
+                    priority_queues[new_cost] = [
+                        (new_pos_x, pos_y, new_route_num, West, tmp_cost)
+                    ]
+                else:
+                    priority_queues[new_cost].append(
+                        (new_pos_x, pos_y, new_route_num, West, tmp_cost)
                     )
-                    inserted = True
-                    break
-            if not inserted:
-                current_queue.append(
-                    (new_pos, new_route_num, dir[2], new_cost, new_total_cost)
-                )
+
+        if south_movability:
+            new_pos_y = pos_y - 1
+            new_pos = (pos_x, new_pos_y)
+
+            if new_pos == treasure:
+                tmp_route.append(South)
+                return tmp_route
+
+            if new_pos not in visited:
+                visited.add(new_pos)
+
+                new_route_num = len(routes)
+                new_route = tmp_route[:]
+                new_route.append(South)
+                routes.append(new_route)
+
+                new_cost = tmp_cost + dist(pos_x, new_pos_y, treasure_x, treasure_y)
+                if new_cost not in priority_queues:
+                    priority_queues[new_cost] = [
+                        (pos_x, new_pos_y, new_route_num, North, tmp_cost)
+                    ]
+                else:
+                    priority_queues[new_cost].append(
+                        (pos_x, new_pos_y, new_route_num, North, tmp_cost)
+                    )
+
+        if west_movability:
+            new_pos_x = pos_x - 1
+            new_pos = (new_pos_x, pos_y)
+
+            if new_pos == treasure:
+                tmp_route.append(West)
+                return tmp_route
+
+            if new_pos not in visited:
+                visited.add(new_pos)
+
+                new_route_num = len(routes)
+                new_route = tmp_route
+                new_route.append(West)
+                routes.append(new_route)
+
+                new_cost = tmp_cost + dist(new_pos_x, pos_y, treasure_x, treasure_y)
+                if new_cost not in priority_queues:
+                    priority_queues[new_cost] = [
+                        (new_pos_x, pos_y, new_route_num, East, tmp_cost)
+                    ]
+                else:
+                    priority_queues[new_cost].append(
+                        (new_pos_x, pos_y, new_route_num, East, tmp_cost)
+                    )
+
+
+with_update_num = 245
+without_update_num = 55
 
 
 def search():
-    maze = [
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-    ]
+    current_x = 0
+    current_y = 0
+    limit = init_search(with_update_num)
 
-    current_x, current_y = 0, 0
-    reset_limit = init_search(
-        maze, {(current_x, current_y)}, (current_x, current_y), None, 140
-    )
-
-    for _ in range(160):
-        route = bfs(
-            maze,
-            current_x,
-            current_y,
-            measure(),
-        )
+    for _ in range(limit):
+        route = a_star(current_x, current_y, measure())
         for dir in route:
             move(dir)
-            current_x, current_y = get_pos_x(), get_pos_y()
-            update_cell(maze, current_x, current_y)
+            current_x = get_pos_x()
+            current_y = get_pos_y()
+            update_cell(current_x, current_y)
 
         use_item(Items.Weird_Substance, substance)
 
-    for _ in range(reset_limit):
-        route = a_star(
-            maze,
-            current_x,
-            current_y,
-            measure(),
-        )
+    for _ in range(without_update_num):
+        route = a_star(current_x, current_y, measure())
         for dir in route:
             move(dir)
-            current_x, current_y = get_pos_x(), get_pos_y()
-            update_cell(maze, current_x, current_y)
 
         use_item(Items.Weird_Substance, substance)
+        current_x = get_pos_x()
+        current_y = get_pos_y()
 
-    route = a_star(
-        maze,
-        current_x,
-        current_y,
-        measure(),
-    )
+    route = a_star(current_x, current_y, measure())
     for dir in route:
         move(dir)
     harvest()
